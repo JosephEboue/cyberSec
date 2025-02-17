@@ -35,23 +35,31 @@ class WebServer(BaseHTTPRequestHandler):
             return SimpleCookie()
 
     def do_GET(self):
+        # Set a cookie
+        cookie = SimpleCookie()
+        cookie["session"] = "test_session"
+        cookie["session"]["path"] = "/"
+        cookie["session"]["httponly"] = True
         self.send_response(200)
         self.send_header("Content-type", "text/html")
+        # Include the cookie in the response headers
+        for morsel in cookie.values():
+            self.send_header("Set-Cookie", morsel.OutputString())
         self.end_headers()
-        message = "Handling GET request bro !"
+        message = "Cookie set!"
         self.wfile.write(message.encode("utf-8"))
-        # Example of using query_data
-        # query_string = self.query_data.get('key', [''])[0]
 
     def do_POST(self):
-        post_data = self.read_post_data()
+        # Attempt to read the cookie
+        cookies = self.cookies()
+        session_cookie = cookies["session"].value if "session" in cookies else "No cookie"
+
+        # Prepare the response
         self.send_response(200)
         self.send_header("Content-type", "text/html")
         self.end_headers()
-        message = "Handling POST request bro !"
+        message = f"Handling POST request! Found cookie: {session_cookie}"
         self.wfile.write(message.encode("utf-8"))
-        # Example of using post_data
-        # post_var = post_data.get('key', [''])[0]
 
 
 # you can change the server port here in this method
